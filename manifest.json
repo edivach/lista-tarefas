@@ -1,0 +1,13 @@
+{
+  "name": "Minhas Tarefas",
+  "short_name": "Tarefas",
+  "description": "Lista de tarefas simples e colorida, funciona offline",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0a1e",
+  "theme_color": "#7c3aed",
+  "lang": "pt-BR",
+  "icons": []
+}

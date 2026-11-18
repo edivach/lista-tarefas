@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>Minhas Tarefas</title>
+  <link rel="manifest" href="manifest.json" id="manifest-link" />
+  <link rel="icon" href="data:," id="favicon-link" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --roxo: #7c3aed;
+      --rosa: #ec4899;
+      --laranja: #f97316;
+      --fundo: #0f0a1e;
+      --card: rgba(255, 255, 255, 0.08);
+      --texto: #f5f3ff;
+      --texto-suave: #c4b5fd;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      color: var(--texto);
+      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 40%, #831843 75%, #7c2d12 100%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 48px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #f472b6, #fbbf24, #34d399);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    header p { color: var(--texto-suave); font-size: 0.95rem; }
+
+    #offline-banner {
+      display: none;
+      background: linear-gradient(90deg, #f97316, #ef4444);
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .nova-tarefa {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #input-tarefa {
+      flex: 1;
+      padding: 14px 16px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--texto);
+      font-size: 1rem;
+      outline: none;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.2s;
+    }
+
+    #input-tarefa:focus { border-color: var(--rosa); }
+    #input-tarefa::placeholder { color: var(--texto-suave); }
+
+    #btn-adicionar {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--rosa), var(--laranja));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    }
+
+    #btn-adicionar:hover { transform: translateY(-2px); }
+    #btn-adicionar:active { transform: scale(0.96); }
+
+    #contador {
+      text-align: center;
+      color: var(--texto-suave);
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+
+    #contador strong { color: #fbbf24; }
+
+    #lista-tarefas {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #lista-tarefas li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      padding: 14px 16px;
+      border-radius: 14px;
+      animation: surgir 0.25s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes surgir {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #lista-tarefas li.concluida .texto-tarefa {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    .checkbox {
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      border: 2px solid var(--rosa);
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .checkbox:checked {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      border-color: #10b981;
+    }
+
+    .checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 15px;
+    }
+
+    .texto-tarefa { flex: 1; word-break: break-word; }
+
+    .btn-excluir {
+      background: rgba(239, 68, 68, 0.15);
+      border: none;
+      color: #f87171;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-excluir:hover { background: rgba(239, 68, 68, 0.35); transform: scale(1.1); }
+
+    .vazio {
+      text-align: center;
+      color: var(--texto-suave);
+      padding: 32px;
+      background: var(--card);
+      border-radius: 14px;
+    }
+
+    @media (max-width: 420px) {
+      header h1 { font-size: 1.6rem; }
+      #btn-adicionar { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>✨ Minhas Tarefas</h1>
+      <p>Organize seu dia, um passo de cada vez</p>
+    </header>
+
+    <div id="offline-banner">📡 Você está offline — modo offline ativo</div>
+
+    <form class="nova-tarefa" id="form-tarefa">
+      <input type="text" id="input-tarefa" placeholder="Digite uma nova tarefa..." autocomplete="off" required />
+      <button type="submit" id="btn-adicionar">Adicionar</button>
+    </form>
+
+    <p id="contador">0 tarefas pendentes</p>
+
+    <ul id="lista-tarefas"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('form-tarefa');
+    const input = document.getElementById('input-tarefa');
+    const lista = document.getElementById('lista-tarefas');
+    const contador = document.getElementById('contador');
+    const banner = document.getElementById('offline-banner');
+
+    let tarefas = JSON.parse(localStorage.getItem('tarefas') || '[]');
+
+    function salvar() {
+      localStorage.setItem('tarefas', JSON.stringify(tarefas));
+    }
+
+    function atualizarContador() {
+      const pendentes = tarefas.filter(t => !t.concluida).length;
+      contador.innerHTML = `<strong>${pendentes}</strong> tarefa${pendentes === 1 ? '' : 's'} pendente${pendentes === 1 ? '' : 's'}`;
+    }
+
+    function renderizar() {
+      lista.innerHTML = '';
+      if (tarefas.length === 0) {
+        lista.innerHTML = '<li class="vazio">🎉 Nenhuma tarefa por aqui. Aproveite!</li>';
+      }
+      tarefas.forEach((tarefa, i) => {
+        const li = document.createElement('li');
+        if (tarefa.concluida) li.classList.add('concluida');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'checkbox';
+        checkbox.checked = tarefa.concluida;
+        checkbox.addEventListener('change', () => {
+          tarefas[i].concluida = checkbox.checked;
+          salvar();
+          renderizar();
+        });
+
+        const span = document.createElement('span');
+        span.className = 'texto-tarefa';
+        span.textContent = tarefa.texto;
+
+        const btnExcluir = document.createElement('button');
+        btnExcluir.className = 'btn-excluir';
+        btnExcluir.textContent = '🗑️';
+        btnExcluir.title = 'Excluir tarefa';
+        btnExcluir.addEventListener('click', () => {
+          tarefas.splice(i, 1);
+          salvar();
+          renderizar();
+        });
+
+        li.append(checkbox, span, btnExcluir);
+        lista.appendChild(li);
+      });
+      atualizarContador();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const texto = input.value.trim();
+      if (!texto) return;
+      tarefas.push({ texto, concluida: false });
+      input.value = '';
+      salvar();
+      renderizar();
+      input.focus();
+    });
+
+    function atualizarOffline() {
+      banner.style.display = navigator.onLine ? 'none' : 'block';
+    }
+    window.addEventListener('online', atualizarOffline);
+    window.addEventListener('offline', atualizarOffline);
+    navigator.serviceWorker?.addEventListener('message', (e) => {
+      if (e.data?.tipo === 'OFFLINE') banner.style.display = 'block';
+    });
+    atualizarOffline();
+
+    function gerarIcone() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#7c3aed');
+      grad.addColorStop(0.5, '#ec4899');
+      grad.addColorStop(1, '#f97316');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 512, 512, 110);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 300px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('✓', 256, 280);
+      return canvas.toDataURL('image/png');
+    }
+
+    async function configurarManifest() {
+      const icone = gerarIcone();
+      document.getElementById('favicon-link').href = icone;
+      try {
+        const resp = await fetch('manifest.json');
+        const manifest = await resp.json();
+        manifest.icons = [
+          { src: icone, sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: icone, sizes: '192x192', type: 'image/png', purpose: 'any' }
+        ];
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+      } catch (e) {
+        console.warn('Manifest não carregado:', e);
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW falhou:', err));
+      });
+    }
+
+    configurarManifest();
+    renderizar();
+  </script>
+</body>
+</html>
